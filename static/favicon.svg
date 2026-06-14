@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c4b0f0"/>
+      <stop offset="100%" stop-color="#3dd6c0"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="#1c1927"/>
+  <!-- Geometric A: two diagonals + crossbar, stroke-based so it reads at 16px -->
+  <g stroke="url(#g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <polyline points="6,27 16,5 26,27"/>
+    <line x1="10.5" y1="19" x2="21.5" y2="19"/>
+  </g>
+</svg>
