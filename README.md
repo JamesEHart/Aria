@@ -1,4 +1,4 @@
-# ARIA v2 — Local AI Agent
+# ARIA — Local AI Agent
 ### Hermes-comparable · 100% Local · 100% Free · Zero Dependencies
 
 ---
@@ -8,6 +8,7 @@
 | Feature | Hermes Agent | ARIA v2 |
 |---|---|---|
 | Local LLM (Ollama) | ✅ | ✅ |
+| Live model readiness check | — | ✅ (`/api/ps` + generate ping) |
 | Dual memory (MEMORY.md + USER.md) | ✅ | ✅ |
 | Memory capacity management | ✅ 2200+1375 chars | ✅ Same limits |
 | Skills system (procedural memory) | ✅ | ✅ |
