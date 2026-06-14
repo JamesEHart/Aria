@@ -79,7 +79,7 @@ html, body {
 #app { display: grid; grid-template-columns: 256px 1fr 280px; grid-template-rows: 50px 1fr 84px; height: 100vh }
 #topbar   { grid-column: 1/-1; background: var(--bg2); border-bottom: 1px solid var(--b1); display: flex; align-items: center; padding: 0 18px; gap: 10px; z-index: 30;
             animation: panel-in 320ms var(--ease-out-quint) 0ms both }
-#left     { grid-row: 2/4; background: var(--bg2); border-right: 1px solid var(--b1); overflow-y: auto; display: flex; flex-direction: column;
+#left     { grid-row: 2/4; background: var(--bg2); border-right: 1px solid var(--b1); overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column;
             animation: panel-in 420ms var(--ease-out-quint) 60ms both }
 #main     { grid-row: 2/3; overflow-y: auto; padding: 24px 32px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;
             animation: panel-in 420ms var(--ease-out-quint) 110ms both }
@@ -106,8 +106,8 @@ html, body {
 .tstat strong { color: var(--t2) }
 
 /* ── Left sidebar tabs ── */
-.tab-bar { display: flex; border-bottom: 1px solid var(--b1); flex-shrink: 0 }
-.tab { flex: 1; padding: 8px 4px; text-align: center; font-size: 10px; font-family: var(--display); font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; color: var(--t3); cursor: pointer; transition: color 200ms ease-out; border-bottom: 2px solid transparent }
+.tab-bar { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--b1); flex-shrink: 0 }
+.tab { flex: 1 1 25%; padding: 7px 4px; text-align: center; font-size: 10px; font-family: var(--display); font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; color: var(--t3); cursor: pointer; transition: color 200ms ease-out; border-bottom: 2px solid transparent }
 .tab:hover { color: var(--t2) }
 .tab.active { color: var(--a2); border-bottom-color: var(--accent) }
 
@@ -357,7 +357,7 @@ select:focus, input.url-inp:focus {
 }
 #empty { text-align: center; padding: 70px 24px; pointer-events: none; margin: auto;
          animation: tab-fade-in 400ms var(--ease-out-quint) 200ms both }
-.em-logo { font-family: var(--display); font-size: 52px; font-weight: 800; color: var(--accent); letter-spacing: -2px;
+.em-logo { font-family: var(--display); font-size: 52px; font-weight: 800; color: var(--a3); letter-spacing: -2px;
            animation: aria-breathe 4.5s ease-in-out infinite }
 .em-tag  { display: flex; gap: 6px; justify-content: center; margin: 10px 0 16px; flex-wrap: wrap }
 .em-desc { color: var(--t3); font-size: 12px; line-height: 2; max-width: 360px; margin: 0 auto }
@@ -484,12 +484,8 @@ select:focus, input.url-inp:focus {
 
 <!-- Topbar -->
 <div id="topbar">
-  <div class="logo">AR<em>IA</em> <span style="font-size:11px;color:var(--t3);font-family:var(--font);font-weight:400">v2</span></div>
+  <div class="logo">AR<em>IA</em></div>
   <div class="dot err" id="tdot"></div>
-  <span class="pill p-purple">LOCAL LLM</span>
-  <span class="pill p-teal">SKILLS</span>
-  <span class="pill p-blue">TOOLS</span>
-  <span class="pill p-amber">EVOLVING</span>
   <div class="top-r">
     <span class="tstat">Gen <strong id="tgen">1</strong></span>
     <span class="tstat">KB <strong id="tkb">0</strong></span>
@@ -515,7 +511,7 @@ select:focus, input.url-inp:focus {
     <div class="sec">
       <div class="sec-lbl">Ollama</div>
       <div class="cfg-row">
-        <select id="model-sel"><option>No models</option></select>
+        <select id="model-sel" onchange="checkModelReady()"><option>No models</option></select>
         <button class="btn btn-sm btn-res" onclick="refreshModels()">↺</button>
       </div>
       <input class="url-inp" id="ollama-url" value="http://localhost:11434" placeholder="Ollama URL" onchange="refreshModels()">
@@ -681,15 +677,8 @@ description: What this does
 <!-- Main chat -->
 <div id="main">
   <div id="empty">
-    <div class="em-logo">ARIA</div>
-    <div class="em-tag">
-      <span class="pill p-purple">LOCAL LLM</span>
-      <span class="pill p-teal">SKILLS</span>
-      <span class="pill p-blue">TOOLS</span>
-      <span class="pill p-amber">SELF-EVOLVING</span>
-    </div>
+    <div class="em-logo">AR<em style="color:var(--teal);font-style:normal">IA</em></div>
     <div class="em-desc">
-      <strong>100% local. Zero cost. Zero cloud.</strong><br><br>
       Runs on Ollama. Persistent SQLite memory.<br>
       Auto-creates skills. Rewrites its own instructions.<br>
       Searches past sessions. Executes code. Schedules tasks.<br><br>
@@ -702,8 +691,8 @@ description: What this does
 <div id="inputbar">
   <textarea id="txt" placeholder="Ask anything, or use /skill-name…" rows="1"
     onkeydown="onKey(event)" oninput="autoH(this)"></textarea>
-  <button class="btn btn-sm btn-res" id="btn-research" onclick="doResearch()">⟳</button>
-  <button class="btn btn-sm btn-evo" id="btn-evo2" onclick="doEvolve()">⚡</button>
+  <button class="btn btn-res" id="btn-research" onclick="doResearch()" style="padding:0;width:44px">⟳</button>
+  <button class="btn btn-evo" id="btn-evo2" onclick="doEvolve()" style="padding:0;width:44px">⚡</button>
   <button class="btn btn-send" id="btn-send" onclick="send()">Send →</button>
 </div>
 
@@ -776,7 +765,8 @@ async function refreshModels() {
     const sel = document.getElementById('model-sel');
     if (d.models?.length) {
       sel.innerHTML = d.models.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('');
-      setConn(true, `${d.models.length} model(s)`);
+      setConn(null, 'Checking model…');
+      checkModelReady();
     } else {
       sel.innerHTML = '<option value="">No models — run: ollama pull llama3.2</option>';
       setConn(false, 'No models found');
@@ -787,13 +777,27 @@ async function refreshModels() {
   }
 }
 
+async function checkModelReady() {
+  const model = selectedModel();
+  const url   = ollamaUrl();
+  if (!model) return;
+  setConn(null, 'Checking model…');
+  try {
+    const r = await fetch(`${API}/api/ping?model=${encodeURIComponent(model)}&url=${encodeURIComponent(url)}`).then(d=>d.json());
+    if (r.ready) setConn(true, `${model} ready`);
+    else         setConn(false, r.error || 'Model not responding');
+  } catch {
+    setConn(false, 'Connection failed');
+  }
+}
+
 function setConn(ok, msg) {
   ['cdot','tdot'].forEach(id=>{
     const d=document.getElementById(id);
-    d.className='dot '+(ok?'ok':'err');
+    d.className='dot '+(ok===true?'ok':ok===false?'err':'');
   });
   document.getElementById('clbl').textContent=msg;
-  document.getElementById('clbl').style.color=ok?'var(--t2)':'var(--red)';
+  document.getElementById('clbl').style.color=ok===true?'var(--t2)':ok===false?'var(--red)':'var(--t3)';
 }
 
 function updateStats(st, ev) {

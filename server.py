@@ -1129,6 +1129,31 @@ class ARIAHandler(SimpleHTTPRequestHandler):
             self._json({"items": [dict(r) for r in rows]})
         elif path == "/api/models":
             self._json({"models": ollama_models(q("url",DEFAULT_OLLAMA))})
+        elif path == "/api/ping":
+            model = q("model", "")
+            url   = q("url", DEFAULT_OLLAMA)
+            if not model:
+                self._json({"ready": False, "error": "no model selected"}); return
+            # Fast path: check /api/ps (no inference cost)
+            try:
+                ps_req = Request(f"{url}/api/ps", headers={"User-Agent":"ARIA/2.0"})
+                with urlopen(ps_req, timeout=3) as r:
+                    ps_data = json.loads(r.read())
+                if any(m["name"] == model for m in ps_data.get("models", [])):
+                    self._json({"ready": True}); return
+            except: pass
+            # Slow path: tiny generate forces load and confirms the model responds
+            try:
+                payload = json.dumps({
+                    "model": model, "prompt": "hi", "stream": False,
+                    "options": {"num_predict": 1}
+                }).encode()
+                req = Request(f"{url}/api/generate", data=payload,
+                              headers={"Content-Type": "application/json"}, method="POST")
+                with urlopen(req, timeout=60) as r: json.loads(r.read())
+                self._json({"ready": True})
+            except Exception as e:
+                self._json({"ready": False, "error": str(e)})
         elif path == "/api/soul":
             self._json({"soul": load_soul()})
         else:
